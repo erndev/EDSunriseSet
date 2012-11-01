@@ -444,7 +444,7 @@ __sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
     
     /* Compute time when Sun is at south - in hours UT */
     //tsouth = 12.0 - rev180(sidtime - sRA)/15.0;
-    tsouth = 12.0 - [self rev180:(sidtime - sRA)/15.0];
+    tsouth = 12.0 - [self rev180:sidtime - sRA] / 15.0;
     
     /* Compute the Sun's apparent radius, degrees */
     sradius = 0.2666 / sr;
