@@ -113,7 +113,7 @@ static const int secondsInHour= 60.0*60.0;
         _astronomicalTwilightEnd = nil;
         _astronomicalTwilightStart = nil;
         
-        _calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
+        _calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
         _utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
 
     }
