@@ -103,7 +103,7 @@ static const int secondsInHour= 60.0*60.0;
     {
         _latitude   = lat;
         _longitude  = longt;
-        _timezone   = tz;
+        _timezone   = [tz retain];
         _sunrise = nil;
         _sunset = nil;
         _civilTwilightEnd = nil;
@@ -114,7 +114,7 @@ static const int secondsInHour= 60.0*60.0;
         _astronomicalTwilightStart = nil;
         
         _calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-        _utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+        _utcTimeZone = [[NSTimeZone timeZoneWithAbbreviation:@"UTC"] retain];
 
     }
     return self;
