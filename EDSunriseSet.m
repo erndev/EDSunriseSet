@@ -134,7 +134,6 @@ static const int secondsInHour= 60.0*60.0;
     [_civilTwilightStart release];
     [_nauticalTwilightEnd release];
     [_nauticalTwilightStart release];
-    [_nauticalTwilightEnd release];
     [_astronomicalTwilightEnd release];
     [_astronomicalTwilightStart release];
     [_calendar release];
