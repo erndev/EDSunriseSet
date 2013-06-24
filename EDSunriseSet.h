@@ -16,8 +16,11 @@
 //  Released to the public domain by Paul Schlyter, December 1992
 //
 
-
 #import <Foundation/Foundation.h>
+
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag in this file.
+#endif
 
 @interface EDSunriseSet : NSObject {
 }
