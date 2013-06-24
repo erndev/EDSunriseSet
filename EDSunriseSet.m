@@ -62,87 +62,60 @@
                          trise:(double *)trise tset:(double *)tset ;
 -(NSDateComponents*)localTime:(NSDate*)date;
 -(NSDate*)utcTime:(NSDateComponents*)dateComponents withOffset:(NSTimeInterval)interval;
+
 @end
 
-#pragma mark -
-#pragma mark Readwrite accessors only private
+#pragma mark - Readwrite accessors only private
+
 @interface EDSunriseSet()
-@property (readwrite,retain) NSDate *sunset;
-@property (readwrite,retain) NSDate *sunrise;
-@property (readwrite,retain) NSDate *civilTwilightStart;
-@property (readwrite,retain) NSDate *civilTwilightEnd;
-@property (readwrite,retain) NSDate *nauticalTwilightStart;
-@property (readwrite,retain) NSDate *nauticalTwilightEnd;
-@property (readwrite,retain) NSDate *astronomicalTwilightStart;
-@property (readwrite,retain) NSDate *astronomicalTwilightEnd;
+
+@property (nonatomic, assign) double latitude;
+@property (nonatomic, assign) double longitude;
+@property (nonatomic, strong) NSTimeZone *timezone;
+@property (nonatomic, strong) NSCalendar *calendar;
+@property (nonatomic, strong) NSTimeZone *utcTimeZone;
+
+@property (readwrite, retain) NSDate *sunset;
+@property (readwrite, retain) NSDate *sunrise;
+@property (readwrite, retain) NSDate *civilTwilightStart;
+@property (readwrite, retain) NSDate *civilTwilightEnd;
+@property (readwrite, retain) NSDate *nauticalTwilightStart;
+@property (readwrite, retain) NSDate *nauticalTwilightEnd;
+@property (readwrite, retain) NSDate *astronomicalTwilightStart;
+@property (readwrite, retain) NSDate *astronomicalTwilightEnd;
 
 @end
 
+#pragma mark - Public Implementation
 
-#pragma mark -
-#pragma mark Public Implementation
 @implementation EDSunriseSet
-
-#pragma mark -
-#pragma mark Synthesize
-@synthesize sunrise=_sunrise, sunset=_sunset;
-@synthesize civilTwilightEnd=_civilTwilightEnd, civilTwilightStart=_civilTwilightStart;
-@synthesize nauticalTwilightEnd=_nauticalTwilightEnd, nauticalTwilightStart=_nauticalTwilightStart;
-@synthesize astronomicalTwilightEnd=_astronomicalTwilightEnd, astronomicalTwilightStart=_astronomicalTwilightStart;
-
 
 static const int minutesInDay= 60.0*24.0;
 static const int secondsInHour= 60.0*60.0;
 
-#pragma mark -
-#pragma mark Initialization & dealloc
--(EDSunriseSet*)initWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt
-{
+#pragma mark - Initialization & dealloc
+
+-(EDSunriseSet*)initWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt {
     self = [super init];
     if( self )
     {
-        _latitude   = lat;
-        _longitude  = longt;
-        _timezone   = [tz retain];
-        _sunrise = nil;
-        _sunset = nil;
-        _civilTwilightEnd = nil;
-        _civilTwilightStart = nil;
-        _nauticalTwilightEnd = nil;
-        _nauticalTwilightStart = nil;
-        _astronomicalTwilightEnd = nil;
-        _astronomicalTwilightStart = nil;
+        self.latitude = lat;
+        self.longitude = longt;
+        self.timezone = tz;        
         
-        _calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-        _utcTimeZone = [[NSTimeZone timeZoneWithAbbreviation:@"UTC"] retain];
+        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+        self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
 
     }
     return self;
 }
-+(EDSunriseSet*)sunrisesetWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt
-{
-    return [[[EDSunriseSet alloc] initWithTimezone:tz latitude:lat longitude:longt] autorelease];
-    
+
++(EDSunriseSet*)sunrisesetWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt {
+    return [[EDSunriseSet alloc] initWithTimezone:tz latitude:lat longitude:longt];    
 }
 
--(void)dealloc
-{
-    
-    [_sunrise release];
-    [_sunset release];
-    [_civilTwilightEnd release];
-    [_civilTwilightStart release];
-    [_nauticalTwilightEnd release];
-    [_nauticalTwilightStart release];
-    [_astronomicalTwilightEnd release];
-    [_astronomicalTwilightStart release];
-    [_calendar release];
-    [_utcTimeZone release];
-    [_timezone release];
-    [super dealloc];
-}
-#pragma mark -
-#pragma mark Calculation methods
+#pragma mark - Calculation methods
+
 -(void)calculateSunriseSunset:(NSDate*)date;
 {
     // Get date components 
@@ -181,79 +154,76 @@ static const int secondsInHour= 60.0*60.0;
                             trise:&start tset:&end ];
     self.astronomicalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*secondsInHour)];
     self.astronomicalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*secondsInHour)];
-
-
 }
+
 -(void)calculate:(NSDate*)date
-{
-    
+{    
     [self calculateSunriseSunset:date];
     [self calculateTwilight:date];
 }
 
-#pragma mark -
-#pragma mark Local Time Helpers
+#pragma mark - Local Time Helpers
+
 -(NSDateComponents*)localSunrise
 {
     return [self localTime:(NSDate*)self.sunrise];
     
 }
+
 -(NSDateComponents*)localSunset
 {
     return [self localTime:(NSDate*)self.sunset];
 }
+
 -(NSDateComponents*)localCivilTwilightStart
 {
     return [self localTime:(NSDate*)self.civilTwilightStart];
-
 }
+
 -(NSDateComponents*)localCivilTwilightEnd
 {
     return [self localTime:(NSDate*)self.civilTwilightEnd];
-
 }
+
 -(NSDateComponents*)localNauticalCivilTwilightStart
 {
     return [self localTime:(NSDate*)self.nauticalTwilightStart];
-
 }
+
 -(NSDateComponents*)localNauticalCivilTwilightEnd
 {
     return [self localTime:(NSDate*)self.nauticalTwilightEnd];
-
 }
+
 -(NSDateComponents*)localAstronomicalTwilightStart
 {
     return [self localTime:(NSDate*)self.astronomicalTwilightStart];
-
 }
+
 -(NSDateComponents*)localAstronomicalTwilightEnd
 {
     return [self localTime:(NSDate*)self.astronomicalTwilightEnd];
-
 }
+
 @end
 
-#pragma mark -
-#pragma mark Private Implementation
+#pragma mark - Private Implementation
+
 @implementation EDSunriseSet(Private)
 -(NSDate*)utcTime:(NSDateComponents*)dateComponents withOffset:(NSTimeInterval)interval
 {
     [_calendar setTimeZone:_utcTimeZone];
     return [[_calendar dateFromComponents:dateComponents] dateByAddingTimeInterval:(NSTimeInterval)(interval)];
-    
 }
+
 -(NSDateComponents*)localTime:(NSDate*)refDate
 {
-
-    
     [_calendar setTimeZone:_timezone];
     // Return only hour, minute, seconds
     NSDateComponents *dc = [_calendar components:( NSHourCalendarUnit  | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:refDate] ;
     
     return dc;
 }
-
 
 /*****************************************/
 /* Reduce angle to within 0..360 degrees */
@@ -473,7 +443,4 @@ __sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
     return rc;
 }  /* __sunriset__ */
 
-
-
 @end
-
