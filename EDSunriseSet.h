@@ -16,29 +16,22 @@
 //  Released to the public domain by Paul Schlyter, December 1992
 //
 
-
 #import <Foundation/Foundation.h>
 
-@interface EDSunriseSet : NSObject
-{
-@private
-    NSCalendar  *_calendar;
-    NSTimeZone  *_utcTimeZone;
-    double      _latitude;
-    double      _longitude;
-    NSTimeZone  *_timezone;
-    // UTC dates
-    NSDate      *_sunrise, *_sunset;
-    NSDate      *_civilTwilightStart, *_civilTwilightEnd;
-    NSDate      *_nauticalTwilightStart, *_nauticalTwilightEnd;
-    NSDate      *_astronomicalTwilightStart, *_astronomicalTwilightEnd;
-    
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag in this file.
+#endif
+
+@interface EDSunriseSet : NSObject {
 }
+
 -(EDSunriseSet*)initWithTimezone:(NSTimeZone*)timezone latitude:(double)latitude longitude:(double)longitude;
 +(EDSunriseSet*)sunrisesetWithTimezone:(NSTimeZone*)timezone latitude:(double)lat longitude:(double)longt;
+
 -(void)calculateSunriseSunset:(NSDate*)date;
 -(void)calculateTwilight:(NSDate*)date;
 -(void)calculate:(NSDate*)date;
+
 -(NSDateComponents*)localSunrise;
 -(NSDateComponents*)localSunset;
 -(NSDateComponents*)localCivilTwilightStart;
