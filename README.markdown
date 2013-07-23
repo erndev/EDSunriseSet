@@ -23,7 +23,7 @@ This method returns an `EDSunriseSet` object which can be used to access the fol
   - The local sunset time, `localSunset`  
   - The time when civil twilight (when the sun is 6 degrees below the horizon) begins and ends, `localCivilTwilightStart` and `localCivilTwilightEnd`  
   - The time when nautical twilight (when the sun is 12 degrees below the horizon) begins and ends, `localNauticalCivilTwilightStart` and `localNauticalCivilTwilightEnd`  
-  -  The time when astronomical twilight (when the sun is 18 degrees below the horizon) begins and ends, `localAstronomicalTwilightStart` and `localAstronomicalTwilightEnd`
+  - The time when astronomical twilight (when the sun is 18 degrees below the horizon) begins and ends, `localAstronomicalTwilightStart` and `localAstronomicalTwilightEnd`
 
 You may also access `NSDate` proprties on `EDSunriseSet` which give a read-only value of the date for the specified property. These properties include `sunrise` and `sunset` among others.
     
