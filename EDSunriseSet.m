@@ -101,7 +101,7 @@ static const int secondsInHour= 60.0*60.0;
         self.longitude = longt;
         self.timezone = tz;        
         
-        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
         self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
 
     }
