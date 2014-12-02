@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "EDSunriseSet"
-  s.version      = "0.1"
+  s.version      = "1.0"
   s.summary      = "Objective-C class to calculate Sunrise/Sunset/Twilight times."
   s.description  = <<-DESC
                     EDSunriseSet is an Objective-C wrapper for the C languages routines created by Paul Schlyter.
