@@ -38,7 +38,6 @@
 
 /* A macro to compute the number of days elapsed since 2000 Jan 0.0 */
 /* (which is equal to 1999 Dec 31, 0h UT)                           */
-/* Dan R sez: This is some pretty fucking high magic. */
 #define days_since_2000_Jan_0(y,m,d) \
 (367L*(y)-((7*((y)+(((m)+9)/12)))/4)+((275*(m))/9)+(d)-730530L)
 
@@ -90,7 +89,6 @@
 
 @implementation EDSunriseSet
 
-static const int minutesInDay= 60.0*24.0;
 static const int secondsInHour= 60.0*60.0;
 
 #pragma mark - Initialization & dealloc
@@ -120,7 +118,7 @@ static const int secondsInHour= 60.0*60.0;
 {
     // Get date components 
     [_calendar setTimeZone:_timezone];
-    NSDateComponents *dateComponents = [_calendar components:( NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit ) fromDate:date];
+    NSDateComponents *dateComponents = [_calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
 
     // Calculate sunrise and sunset
     double rise=0.0, set=0.0;
@@ -136,7 +134,7 @@ static const int secondsInHour= 60.0*60.0;
 {
     // Get date components 
     [_calendar setTimeZone:_timezone];
-    NSDateComponents *dateComponents = [_calendar components:( NSYearCalendarUnit | NSMonthCalendarUnit |  NSDayCalendarUnit ) fromDate:date];
+    NSDateComponents *dateComponents = [_calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
     double start=0.0, end=0.0;
 
     // Civil twilight
@@ -220,7 +218,7 @@ static const int secondsInHour= 60.0*60.0;
 {
     [_calendar setTimeZone:_timezone];
     // Return only hour, minute, seconds
-    NSDateComponents *dc = [_calendar components:( NSHourCalendarUnit  | NSMinuteCalendarUnit | NSSecondCalendarUnit) fromDate:refDate] ;
+    NSDateComponents *dc = [_calendar components:( NSCalendarUnitHour  | NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:refDate] ;
     
     return dc;
 }
