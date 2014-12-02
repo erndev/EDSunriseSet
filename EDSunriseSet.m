@@ -42,6 +42,12 @@
 (367L*(y)-((7*((y)+(((m)+9)/12)))/4)+((275*(m))/9)+(d)-730530L)
 
 
+#if defined(__IPHONE_8_0) || defined (__MAC_10_10)
+#define EDGregorianCalendar NSCalendarIdentifierGregorian
+#else
+#define EDGregorianCalendar NSGregorianCalendar
+#endif
+
 #pragma mark -
 #pragma mark Private Interface
 @interface  EDSunriseSet(Private)
@@ -101,7 +107,7 @@ static const int secondsInHour= 60.0*60.0;
         self.longitude = longt;
         self.timezone = tz;        
         
-        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:EDGregorianCalendar];
         self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
 
     }
