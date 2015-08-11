@@ -332,6 +332,16 @@ static const int kSecondsInHour= 60.0*60.0;
     return nil;
 }
 
+-(NSString *)description
+{
+    
+    NSMutableString *str = [NSMutableString new];
+    
+    [str appendFormat:@"Local Sunrise: %@\n", self.localSunrise.description];
+    [str appendFormat:@"Local Sunset: %@\n", self.localSunset.description];
+    return str;
+}
+
 #pragma mark - Calculation methods
 
 -(void)calculateSunriseSunset
@@ -350,7 +360,7 @@ static const int kSecondsInHour= 60.0*60.0;
     self.sunrise = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsRise];
     self.sunset  = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsSet];
     self.localSunrise = [self localTime:self.sunrise];
-    self.localSunset = [self localTime:self.sunrise];
+    self.localSunset = [self localTime:self.sunset];
 }
 
 -(void)calculateTwilight
