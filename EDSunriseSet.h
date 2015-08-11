@@ -22,32 +22,30 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag in this file.
 #endif
 
-@interface EDSunriseSet : NSObject {
-}
+@interface EDSunriseSet : NSObject
 
--(EDSunriseSet*)initWithTimezone:(NSTimeZone*)timezone latitude:(double)latitude longitude:(double)longitude;
-+(EDSunriseSet*)sunrisesetWithTimezone:(NSTimeZone*)timezone latitude:(double)lat longitude:(double)longt;
+@property (readonly, strong) NSDate *date;
+@property (readonly, strong) NSDate *sunset;
+@property (readonly, strong) NSDate *sunrise;
+@property (readonly, strong) NSDate *civilTwilightStart;
+@property (readonly, strong) NSDate *civilTwilightEnd;
+@property (readonly, strong) NSDate *nauticalTwilightStart;
+@property (readonly, strong) NSDate *nauticalTwilightEnd;
+@property (readonly, strong) NSDate *astronomicalTwilightStart;
+@property (readonly, strong) NSDate *astronomicalTwilightEnd;
 
--(void)calculateSunriseSunset:(NSDate*)date;
--(void)calculateTwilight:(NSDate*)date;
--(void)calculate:(NSDate*)date;
+@property (readonly, strong) NSDateComponents* localSunrise;
+@property (readonly, strong) NSDateComponents* localSunset;
+@property (readonly, strong) NSDateComponents* localCivilTwilightStart;
+@property (readonly, strong) NSDateComponents* localCivilTwilightEnd;
+@property (readonly, strong) NSDateComponents* localNauticalCivilTwilightStart;
+@property (readonly, strong) NSDateComponents* localNauticalCivilTwilightEnd;
+@property (readonly, strong) NSDateComponents* localAstronomicalTwilightStart;
+@property (readonly, strong) NSDateComponents* localAstronomicalTwilightEnd;
 
--(NSDateComponents*)localSunrise;
--(NSDateComponents*)localSunset;
--(NSDateComponents*)localCivilTwilightStart;
--(NSDateComponents*)localCivilTwilightEnd;
--(NSDateComponents*)localNauticalCivilTwilightStart;
--(NSDateComponents*)localNauticalCivilTwilightEnd;
--(NSDateComponents*)localAstronomicalTwilightStart;
--(NSDateComponents*)localAstronomicalTwilightEnd;
 
-@property (readonly,retain) NSDate *sunset;
-@property (readonly,retain) NSDate *sunrise;
-@property (readonly,retain) NSDate *civilTwilightStart;
-@property (readonly,retain) NSDate *civilTwilightEnd;
-@property (readonly,retain) NSDate *nauticalTwilightStart;
-@property (readonly,retain) NSDate *nauticalTwilightEnd;
-@property (readonly,retain) NSDate *astronomicalTwilightStart;
-@property (readonly,retain) NSDate *astronomicalTwilightEnd;
+-(instancetype)initWithDate:(NSDate*)date timezone:(NSTimeZone*)timezone latitude:(double)latitude longitude:(double)longitude NS_DESIGNATED_INITIALIZER;
++(instancetype)sunrisesetWithDate:(NSDate*)date timezone:(NSTimeZone*)timezone latitude:(double)latitude longitude:(double)longitude;
+-(instancetype) init __attribute__((unavailable("init not available. Use initWithDate:timeZone:latitude:longitude: instead")));
 
 @end

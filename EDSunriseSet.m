@@ -15,6 +15,7 @@
 //  (c) Paul Schlyter, 1989, 1992
 //  Released to the public domain by Paul Schlyter, December 1992
 //
+
 #import "EDSunriseSet.h"
 
 //
@@ -48,186 +49,39 @@
 #define EDGregorianCalendar NSGregorianCalendar
 #endif
 
-#pragma mark -
-#pragma mark Private Interface
-@interface  EDSunriseSet(Private)
--(double) revolution:(double) x;
--(double) rev180:(double) x;
--(double) GMST0:(double) d;
--(void) sunposAtDay:(double)d longitude:(double*)lon r:(double *)r;
--(int) sunRiseSetHelperForYear:(int)year month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                     altitude:(double)altit upper_limb:(int)upper_limb trise:(double *)trise tset:(double *)tset;
--(int) sunRiseSetForYear:(int)year month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                  trise:(double *)trise tset:(double *)tset ;
--(int) civilTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                      trise:(double *)trise tset:(double *)tset ;
--(int) nauticalTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                      trise:(double *)trise tset:(double *)tset ;
--(int) astronomicalTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                         trise:(double *)trise tset:(double *)tset ;
--(NSDateComponents*)localTime:(NSDate*)date;
--(NSDate*)utcTime:(NSDateComponents*)dateComponents withOffset:(NSTimeInterval)interval;
-
-@end
 
 #pragma mark - Readwrite accessors only private
-
 @interface EDSunriseSet()
 
-@property (nonatomic, assign) double latitude;
-@property (nonatomic, assign) double longitude;
+@property (nonatomic) double  latitude;
+@property (nonatomic) double  longitude;
 @property (nonatomic, strong) NSTimeZone *timezone;
 @property (nonatomic, strong) NSCalendar *calendar;
 @property (nonatomic, strong) NSTimeZone *utcTimeZone;
 
-@property (readwrite, retain) NSDate *sunset;
-@property (readwrite, retain) NSDate *sunrise;
-@property (readwrite, retain) NSDate *civilTwilightStart;
-@property (readwrite, retain) NSDate *civilTwilightEnd;
-@property (readwrite, retain) NSDate *nauticalTwilightStart;
-@property (readwrite, retain) NSDate *nauticalTwilightEnd;
-@property (readwrite, retain) NSDate *astronomicalTwilightStart;
-@property (readwrite, retain) NSDate *astronomicalTwilightEnd;
+@property (readwrite, strong) NSDate *date;
+@property (readwrite, strong) NSDate *sunset;
+@property (readwrite, strong) NSDate *sunrise;
+@property (readwrite, strong) NSDate *civilTwilightStart;
+@property (readwrite, strong) NSDate *civilTwilightEnd;
+@property (readwrite, strong) NSDate *nauticalTwilightStart;
+@property (readwrite, strong) NSDate *nauticalTwilightEnd;
+@property (readwrite, strong) NSDate *astronomicalTwilightStart;
+@property (readwrite, strong) NSDate *astronomicalTwilightEnd;
+
+@property (readwrite, strong) NSDateComponents* localSunrise;
+@property (readwrite, strong) NSDateComponents* localSunset;
+@property (readwrite, strong) NSDateComponents* localCivilTwilightStart;
+@property (readwrite, strong) NSDateComponents* localCivilTwilightEnd;
+@property (readwrite, strong) NSDateComponents* localNauticalCivilTwilightStart;
+@property (readwrite, strong) NSDateComponents* localNauticalCivilTwilightEnd;
+@property (readwrite, strong) NSDateComponents* localAstronomicalTwilightStart;
+@property (readwrite, strong) NSDateComponents* localAstronomicalTwilightEnd;
 
 @end
 
-#pragma mark - Public Implementation
-
-@implementation EDSunriseSet
-
-static const int secondsInHour= 60.0*60.0;
-
-#pragma mark - Initialization & dealloc
-
--(EDSunriseSet*)initWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt {
-    self = [super init];
-    if( self )
-    {
-        self.latitude = lat;
-        self.longitude = longt;
-        self.timezone = tz;        
-        
-        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:EDGregorianCalendar];
-        self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
-
-    }
-    return self;
-}
-
-+(EDSunriseSet*)sunrisesetWithTimezone:(NSTimeZone*)tz latitude:(double)lat longitude:(double)longt {
-    return [[EDSunriseSet alloc] initWithTimezone:tz latitude:lat longitude:longt];    
-}
-
-#pragma mark - Calculation methods
-
--(void)calculateSunriseSunset:(NSDate*)date;
-{
-    // Get date components 
-    [_calendar setTimeZone:_timezone];
-    NSDateComponents *dateComponents = [_calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
-
-    // Calculate sunrise and sunset
-    double rise=0.0, set=0.0;
-    [self sunRiseSetForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:_longitude latitude:_latitude
-                      trise:&rise tset:&set ];
-    NSTimeInterval secondsRise  = rise*secondsInHour;
-    NSTimeInterval secondsSet   = set*secondsInHour;
-    self.sunrise = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsRise];
-    self.sunset  = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsSet];
-}
-
--(void)calculateTwilight:(NSDate*)date
-{
-    // Get date components 
-    [_calendar setTimeZone:_timezone];
-    NSDateComponents *dateComponents = [_calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
-    double start=0.0, end=0.0;
-
-    // Civil twilight
-    [self civilTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:_longitude latitude:_latitude
-                      trise:&start tset:&end ];
-    self.civilTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*secondsInHour)];
-    self.civilTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*secondsInHour)];
-    // Nautical twilight
-    [self nauticalTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:_longitude latitude:_latitude
-                         trise:&start tset:&end ];
-    self.nauticalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*secondsInHour)];
-    self.nauticalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*secondsInHour)];
-    // Astronomical twilight
-    [self astronomicalTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:_longitude latitude:_latitude
-                            trise:&start tset:&end ];
-    self.astronomicalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*secondsInHour)];
-    self.astronomicalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*secondsInHour)];
-}
-
--(void)calculate:(NSDate*)date
-{    
-    [self calculateSunriseSunset:date];
-    [self calculateTwilight:date];
-}
-
-#pragma mark - Local Time Helpers
-
--(NSDateComponents*)localSunrise
-{
-    return [self localTime:(NSDate*)self.sunrise];
-    
-}
-
--(NSDateComponents*)localSunset
-{
-    return [self localTime:(NSDate*)self.sunset];
-}
-
--(NSDateComponents*)localCivilTwilightStart
-{
-    return [self localTime:(NSDate*)self.civilTwilightStart];
-}
-
--(NSDateComponents*)localCivilTwilightEnd
-{
-    return [self localTime:(NSDate*)self.civilTwilightEnd];
-}
-
--(NSDateComponents*)localNauticalCivilTwilightStart
-{
-    return [self localTime:(NSDate*)self.nauticalTwilightStart];
-}
-
--(NSDateComponents*)localNauticalCivilTwilightEnd
-{
-    return [self localTime:(NSDate*)self.nauticalTwilightEnd];
-}
-
--(NSDateComponents*)localAstronomicalTwilightStart
-{
-    return [self localTime:(NSDate*)self.astronomicalTwilightStart];
-}
-
--(NSDateComponents*)localAstronomicalTwilightEnd
-{
-    return [self localTime:(NSDate*)self.astronomicalTwilightEnd];
-}
-
-@end
-
-#pragma mark - Private Implementation
-
-@implementation EDSunriseSet(Private)
--(NSDate*)utcTime:(NSDateComponents*)dateComponents withOffset:(NSTimeInterval)interval
-{
-    [_calendar setTimeZone:_utcTimeZone];
-    return [[_calendar dateFromComponents:dateComponents] dateByAddingTimeInterval:(NSTimeInterval)(interval)];
-}
-
--(NSDateComponents*)localTime:(NSDate*)refDate
-{
-    [_calendar setTimeZone:_timezone];
-    // Return only hour, minute, seconds
-    NSDateComponents *dc = [_calendar components:( NSCalendarUnitHour  | NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:refDate] ;
-    
-    return dc;
-}
+#pragma mark - Calculations from sunriset.c
+@implementation EDSunriseSet(Calculations)
 
 /*****************************************/
 /* Reduce angle to within 0..360 degrees */
@@ -235,15 +89,15 @@ static const int secondsInHour= 60.0*60.0;
 -(double) revolution:(double) x
 {
     return( x - 360.0 * floor( x * INV360 ) );
-}   
+}
 
 /*********************************************/
 /* Reduce angle to within -180..+180 degrees */
 /*********************************************/
--(double)  rev180:(double) x 
+-(double)  rev180:(double) x
 {
     return( x - 360.0 * floor( x * INV360 + 0.5 ) );
-}  
+}
 
 -(double) GMST0:(double) d
 {
@@ -323,7 +177,7 @@ static const int secondsInHour= 60.0*60.0;
 __sunriset__( year, month, day, lon, lat, -35.0/60.0, 1, rise, set )
 
 -(int)sunRiseSetForYear:(int)year month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                  trise:(double *)trise tset:(double *)tset 
+                  trise:(double *)trise tset:(double *)tset
 {
     
     return [self sunRiseSetHelperForYear:year month:month day:day longitude:lon latitude:lat altitude:(-35.0/60.0)
@@ -332,33 +186,33 @@ __sunriset__( year, month, day, lon, lat, -35.0/60.0, 1, rise, set )
 }
 /*
  #define civil_twilight(year,month,day,lon,lat,start,end)  \
-__sunriset__( year, month, day, lon, lat, -6.0, 0, start, end )
-*/
+ __sunriset__( year, month, day, lon, lat, -6.0, 0, start, end )
+ */
 -(int) civilTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                      trise:(double *)trise tset:(double *)tset 
+                      trise:(double *)trise tset:(double *)tset
 {
     return [self sunRiseSetHelperForYear:year month:month day:day longitude:lon latitude:lat altitude:-6.0
-                              upper_limb:0 trise:trise tset:tset];  
+                              upper_limb:0 trise:trise tset:tset];
 }
 /*
  #define nautical_twilight(year,month,day,lon,lat,start,end)  \
-__sunriset__( year, month, day, lon, lat, -12.0, 0, start, end )
-*/
+ __sunriset__( year, month, day, lon, lat, -12.0, 0, start, end )
+ */
 -(int) nauticalTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                      trise:(double *)trise tset:(double *)tset 
+                         trise:(double *)trise tset:(double *)tset
 {
     return [self sunRiseSetHelperForYear:year month:month day:day longitude:lon latitude:lat altitude:-12.0
-                              upper_limb:0 trise:trise tset:tset];  
+                              upper_limb:0 trise:trise tset:tset];
 }
 /*
-#define astronomical_twilight(year,month,day,lon,lat,start,end)  \
-__sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
-*/
+ #define astronomical_twilight(year,month,day,lon,lat,start,end)  \
+ __sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
+ */
 -(int) astronomicalTwilightForYear:(int)year  month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                         trise:(double *)trise tset:(double *)tset 
+                             trise:(double *)trise tset:(double *)tset
 {
     return [self sunRiseSetHelperForYear:year month:month day:day longitude:lon latitude:lat altitude:-18.0
-                              upper_limb:0 trise:trise tset:tset];  
+                              upper_limb:0 trise:trise tset:tset];
 }
 
 /***************************************************************************/
@@ -391,7 +245,7 @@ __sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
 /*                                                                    */
 /**********************************************************************/
 -(int)sunRiseSetHelperForYear:(int)year month:(int)month day:(int)day longitude:(double)lon latitude:(double)lat
-                     altitude:(double)altit upper_limb:(int)upper_limb trise:(double *)trise tset:(double *)tset 
+                     altitude:(double)altit upper_limb:(int)upper_limb trise:(double *)trise tset:(double *)tset
 {
     double  d,  /* Days since 2000 Jan 0.0 (negative before) */
     sr,         /* Solar distance, astronomical units */
@@ -447,4 +301,125 @@ __sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
     return rc;
 }  /* __sunriset__ */
 
+
 @end
+
+
+#pragma mark - Private Implementation
+
+@implementation EDSunriseSet(Private)
+
+static const int kSecondsInHour= 60.0*60.0;
+
+
+-(NSDate*)utcTime:(NSDateComponents*)dateComponents withOffset:(NSTimeInterval)interval
+{
+    [self.calendar setTimeZone:self.utcTimeZone];
+    return [[self.calendar dateFromComponents:dateComponents] dateByAddingTimeInterval:(NSTimeInterval)(interval)];
+}
+
+-(NSDateComponents*)localTime:(NSDate*)refDate
+{
+    [self.calendar setTimeZone:self.timezone];
+    // Return only hour, minute, seconds
+    NSDateComponents *dc = [self.calendar components:( NSCalendarUnitHour  | NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:refDate] ;
+    
+    return dc;
+}
+
+- (instancetype) init {
+    [super doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
+#pragma mark - Calculation methods
+
+-(void)calculateSunriseSunset:(NSDate*)date;
+{
+    // Get date components
+    [self.calendar setTimeZone:self.timezone];
+    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
+    
+    // Calculate sunrise and sunset
+    double rise=0.0, set=0.0;
+    [self sunRiseSetForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:self.longitude latitude:self.latitude
+                      trise:&rise tset:&set ];
+    NSTimeInterval secondsRise  = rise*kSecondsInHour;
+    NSTimeInterval secondsSet   = set*kSecondsInHour;
+    
+    self.sunrise = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsRise];
+    self.sunset  = [self utcTime:dateComponents withOffset:(NSTimeInterval)secondsSet];
+    self.localSunrise = [self localTime:self.sunrise];
+    self.localSunset = [self localTime:self.sunrise];
+}
+
+-(void)calculateTwilight:(NSDate*)date
+{
+    // Get date components
+    [self.calendar setTimeZone:self.timezone];
+    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
+    double start=0.0, end=0.0;
+    
+    // Civil twilight
+    [self civilTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:self.longitude latitude:self.latitude
+                         trise:&start tset:&end ];
+    self.civilTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*kSecondsInHour)];
+    self.civilTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*kSecondsInHour)];
+    self.localCivilTwilightStart = [self localTime:self.civilTwilightStart];
+    self.localCivilTwilightEnd = [self localTime:self.civilTwilightEnd];
+    
+    // Nautical twilight
+    [self nauticalTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:self.longitude latitude:self.latitude
+                            trise:&start tset:&end ];
+    self.nauticalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*kSecondsInHour)];
+    self.nauticalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*kSecondsInHour)];
+    self.localNauticalCivilTwilightStart = [self localTime:self.nauticalTwilightStart];
+    self.localNauticalCivilTwilightEnd = [self localTime:self.nauticalTwilightEnd];
+    // Astronomical twilight
+    [self astronomicalTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:self.longitude latitude:self.latitude
+                                trise:&start tset:&end ];
+    self.astronomicalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*kSecondsInHour)];
+    self.astronomicalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*kSecondsInHour)];
+    self.localAstronomicalTwilightStart = [self localTime:self.astronomicalTwilightStart];
+    self.localAstronomicalTwilightEnd = [self localTime:self.astronomicalTwilightEnd];
+}
+
+-(void)calculate:(NSDate*)date
+{
+    [self calculateSunriseSunset:date];
+    [self calculateTwilight:date];
+}
+
+@end
+
+
+#pragma mark - Public Implementation
+
+@implementation EDSunriseSet
+
+#pragma mark - Initialization
+
+-(EDSunriseSet*)initWithDate:(NSDate*)date timezone:(NSTimeZone*)tz latitude:(double)latitude longitude:(double)longitude {
+    self = [super init];
+    if( self )
+    {
+        self.latitude = latitude;
+        self.longitude = longitude;
+        self.timezone = tz;
+        self.date = date;
+        
+        self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:EDGregorianCalendar];
+        self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+
+    }
+    return self;
+}
+
++(EDSunriseSet*)sunrisesetWithDate:(NSDate*)date timezone:(NSTimeZone*)tz latitude:(double)latitude longitude:(double)longitude {
+    return [[EDSunriseSet alloc] initWithDate:date timezone:tz latitude:latitude longitude:longitude];
+}
+
+@end
+
+
+
