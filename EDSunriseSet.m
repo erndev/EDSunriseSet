@@ -334,12 +334,22 @@ static const int kSecondsInHour= 60.0*60.0;
 
 -(NSString *)description
 {
-    
-    NSMutableString *str = [NSMutableString new];
-    
-    [str appendFormat:@"Local Sunrise: %@\n", self.localSunrise.description];
-    [str appendFormat:@"Local Sunset: %@\n", self.localSunset.description];
-    return str;
+    return [NSString stringWithFormat:
+                @"Date: %@\nTimeZone: %@\n"
+                @"Local Sunrise: %@\n"
+                @"Local Sunset: %@\n"
+                @"Local Civil Twilight Start: %@\n"
+                @"Local Civil Twilight End: %@\n"
+                @"Local Nautical Twilight Start: %@\n"
+                @"Local Nautical Twilight End: %@\n"
+                @"Local Astronomical Twilight Start: %@\n"
+                @"Local Astronomical Twilight End: %@\n",
+                self.date.description, self.timezone.name,
+                self.localSunrise.description, self.localSunset.description,
+                self.localCivilTwilightStart, self.localCivilTwilightEnd,
+                self.localNauticalCivilTwilightStart, self.localNauticalCivilTwilightEnd,
+                self.localAstronomicalTwilightStart, self.localAstronomicalTwilightEnd
+            ];
 }
 
 #pragma mark - Calculation methods
