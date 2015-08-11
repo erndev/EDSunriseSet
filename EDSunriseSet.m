@@ -334,11 +334,11 @@ static const int kSecondsInHour= 60.0*60.0;
 
 #pragma mark - Calculation methods
 
--(void)calculateSunriseSunset:(NSDate*)date;
+-(void)calculateSunriseSunset
 {
     // Get date components
     [self.calendar setTimeZone:self.timezone];
-    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
+    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:self.date];
     
     // Calculate sunrise and sunset
     double rise=0.0, set=0.0;
@@ -353,11 +353,11 @@ static const int kSecondsInHour= 60.0*60.0;
     self.localSunset = [self localTime:self.sunrise];
 }
 
--(void)calculateTwilight:(NSDate*)date
+-(void)calculateTwilight
 {
     // Get date components
     [self.calendar setTimeZone:self.timezone];
-    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:date];
+    NSDateComponents *dateComponents = [self.calendar components:( NSCalendarUnitYear | NSCalendarUnitMonth |  NSCalendarUnitDay ) fromDate:self.date];
     double start=0.0, end=0.0;
     
     // Civil twilight
@@ -384,10 +384,10 @@ static const int kSecondsInHour= 60.0*60.0;
     self.localAstronomicalTwilightEnd = [self localTime:self.astronomicalTwilightEnd];
 }
 
--(void)calculate:(NSDate*)date
+-(void)calculate
 {
-    [self calculateSunriseSunset:date];
-    [self calculateTwilight:date];
+    [self calculateSunriseSunset];
+    [self calculateTwilight];
 }
 
 @end
@@ -410,6 +410,8 @@ static const int kSecondsInHour= 60.0*60.0;
         
         self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:EDGregorianCalendar];
         self.utcTimeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+        
+        [self calculate];
 
     }
     return self;
