@@ -38,8 +38,8 @@
 @property (readonly, strong) NSDateComponents* localSunset;
 @property (readonly, strong) NSDateComponents* localCivilTwilightStart;
 @property (readonly, strong) NSDateComponents* localCivilTwilightEnd;
-@property (readonly, strong) NSDateComponents* localNauticalCivilTwilightStart;
-@property (readonly, strong) NSDateComponents* localNauticalCivilTwilightEnd;
+@property (readonly, strong) NSDateComponents* localNauticalTwilightStart;
+@property (readonly, strong) NSDateComponents* localNauticalTwilightEnd;
 @property (readonly, strong) NSDateComponents* localAstronomicalTwilightStart;
 @property (readonly, strong) NSDateComponents* localAstronomicalTwilightEnd;
 

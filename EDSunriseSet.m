@@ -73,8 +73,8 @@
 @property (readwrite, strong) NSDateComponents* localSunset;
 @property (readwrite, strong) NSDateComponents* localCivilTwilightStart;
 @property (readwrite, strong) NSDateComponents* localCivilTwilightEnd;
-@property (readwrite, strong) NSDateComponents* localNauticalCivilTwilightStart;
-@property (readwrite, strong) NSDateComponents* localNauticalCivilTwilightEnd;
+@property (readwrite, strong) NSDateComponents* localNauticalTwilightStart;
+@property (readwrite, strong) NSDateComponents* localNauticalTwilightEnd;
 @property (readwrite, strong) NSDateComponents* localAstronomicalTwilightStart;
 @property (readwrite, strong) NSDateComponents* localAstronomicalTwilightEnd;
 
@@ -347,7 +347,7 @@ static const int kSecondsInHour= 60.0*60.0;
                 self.date.description, self.timezone.name,
                 self.localSunrise.description, self.localSunset.description,
                 self.localCivilTwilightStart, self.localCivilTwilightEnd,
-                self.localNauticalCivilTwilightStart, self.localNauticalCivilTwilightEnd,
+                self.localNauticalTwilightStart, self.localNauticalTwilightEnd,
                 self.localAstronomicalTwilightStart, self.localAstronomicalTwilightEnd
             ];
 }
@@ -393,8 +393,8 @@ static const int kSecondsInHour= 60.0*60.0;
                             trise:&start tset:&end ];
     self.nauticalTwilightStart = [self utcTime:dateComponents withOffset:(NSTimeInterval)(start*kSecondsInHour)];
     self.nauticalTwilightEnd  = [self utcTime:dateComponents withOffset:(NSTimeInterval)(end*kSecondsInHour)];
-    self.localNauticalCivilTwilightStart = [self localTime:self.nauticalTwilightStart];
-    self.localNauticalCivilTwilightEnd = [self localTime:self.nauticalTwilightEnd];
+    self.localNauticalTwilightStart = [self localTime:self.nauticalTwilightStart];
+    self.localNauticalTwilightEnd = [self localTime:self.nauticalTwilightEnd];
     // Astronomical twilight
     [self astronomicalTwilightForYear:(int)[dateComponents year] month:(int)[dateComponents month] day:(int)[dateComponents day] longitude:self.longitude latitude:self.latitude
                                 trise:&start tset:&end ];
