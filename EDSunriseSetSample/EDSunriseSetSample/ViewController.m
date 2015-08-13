@@ -14,13 +14,26 @@ static NSString * const kCityLongitude  = @"longitude";
 static NSString * const kCityLatitude  = @"latitude";
 static NSString * const kCityTimeZone = @"timezone";
 
-@interface ViewController ()
-@property (nonatomic,weak) IBOutlet NSTextField *sunsetTextField;
-@property (nonatomic,weak) IBOutlet NSTextField *sunriseTextField;
+static NSInteger const kSunriseRow = 0;
+static NSInteger const kSunsetRow = 1;
+static NSInteger const kCivilStartRow = 2;
+static NSInteger const kCivilEndRow = 3;
+static NSInteger const kNauticalStartRow = 4;
+static NSInteger const kNauticalEndRow = 5;
+static NSInteger const kAstronomicalStartRow = 6;
+static NSInteger const kAstronomicalEndRow = 7;
+
+
+
+@interface ViewController ()<NSTableViewDataSource, NSTableViewDelegate>
+
+@property (nonatomic,weak) IBOutlet NSTableView *tableView;
 @property (nonatomic,weak) IBOutlet NSPopUpButton *citiesPopup;
 @property (nonatomic,weak) IBOutlet NSDatePicker *datePicker;
 @property (nonatomic,strong) NSArray *cities;
+@property (nonatomic,strong) NSArray *resultsLabels;
 @property (nonatomic,strong) IBOutlet NSDateFormatter *dateFormatter;
+@property (nonatomic,strong) EDSunriseSet *sunriset;
 @end
 
 @implementation ViewController
@@ -40,13 +53,18 @@ static NSString * const kCityTimeZone = @"timezone";
     return _cities;
 }
 
+-(NSArray*)resultsLabels
+{
+    
+    return @[@"Sunrise:", @"Sunset:", @"Civil Twilight Start:", @"Civil Twilight End:", @"Nautical Twilight Start:",
+             @"Nautical Twilight End:", @"Astronomical Twilight Start:", @"Astronomical Twilight End:"];
+}
 
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.datePicker setDateValue:[NSDate new]];
     [self populateCities];
-    
     
 }
 
@@ -61,6 +79,14 @@ static NSString * const kCityTimeZone = @"timezone";
     [self showInfoForSelectedCity];
 }
 
+-(void)viewDidLayout
+{
+    [super viewDidLayout];
+    [self.tableView.tableColumns.firstObject setWidth:self.tableView.bounds.size.width/2.0];
+    [self.tableView.tableColumns.lastObject setWidth:self.tableView.bounds.size.width/2.0];
+    
+}
+
 -(void)showInfoForSelectedCity
 {
     NSInteger index = self.citiesPopup.indexOfSelectedItem;
@@ -70,10 +96,9 @@ static NSString * const kCityTimeZone = @"timezone";
     double longitude = [self.cities[index][kCityLongitude] doubleValue];
     double latitude = [self.cities[index][kCityLatitude] doubleValue];
     
-    EDSunriseSet *srset = [[EDSunriseSet alloc] initWithDate:date timezone:tz latitude:latitude longitude:longitude];
+    self.sunriset = [[EDSunriseSet alloc] initWithDate:date timezone:tz latitude:latitude longitude:longitude];
     self.dateFormatter.timeZone = tz;
-    [self.sunriseTextField setStringValue:[self.dateFormatter stringFromDate:srset.sunrise]];
-    [self.sunsetTextField setStringValue:[self.dateFormatter stringFromDate:srset.sunset]];
+    [self.tableView reloadData];
     
 }
 
@@ -89,3 +114,62 @@ static NSString * const kCityTimeZone = @"timezone";
 
 
 @end
+
+
+@implementation ViewController (TableDataSourceDelegate)
+-(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+    return self.resultsLabels.count;
+}
+
+-(NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    NSTableCellView *cell = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+    NSString *text;
+    if( [tableColumn isEqual:tableView.tableColumns.firstObject] ) {
+        text = self.resultsLabels[row];
+    }
+    else
+    {
+        NSDate *date;
+        switch (row ) {
+            case kSunriseRow:
+                date = self.sunriset.sunrise;
+                break;
+            case kSunsetRow:
+                date = self.sunriset.sunset;
+                break;
+            case kCivilStartRow:
+                date = self.sunriset.civilTwilightStart;
+                break;
+            case kCivilEndRow:
+                date = self.sunriset.civilTwilightEnd;
+                break;
+            case kNauticalStartRow:
+                date = self.sunriset.nauticalTwilightStart;
+                break;
+            case kNauticalEndRow:
+                date = self.sunriset.nauticalTwilightEnd;
+                break;
+            case kAstronomicalStartRow:
+                date = self.sunriset.astronomicalTwilightStart;
+                break;
+            case kAstronomicalEndRow:
+                date = self.sunriset.astronomicalTwilightEnd;
+                break;
+
+            
+            default:
+                break;
+        }
+        text =  [self.dateFormatter stringFromDate:date] ?: @"?";
+
+    }
+    
+    [cell.textField setStringValue:text];
+    return cell;
+}
+
+
+@end
+
